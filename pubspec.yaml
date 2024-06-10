@@ -1,0 +1,60 @@
+name: farm_app
+description: "A new Flutter project."
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.4.1 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+
+  dio:
+  file_picker:
+  flutter_riverpod:
+  flutter_screenutil:
+  device_preview:
+  go_router:
+  cached_network_image:
+  flutter_spinkit:
+  flex_color_scheme:
+  equatable:
+  flutter_boxicons:
+  flutter_launcher_icons:
+  flutter_native_splash:
+  timeago:
+  shared_preferences:
+  flutter_svg:
+  animated_switcher_plus:
+  skeletonizer:
+  dropdown_button2:
+  animated_snack_bar:
+  awesome_notifications:
+  intl:
+  get_it:
+  sqflite:
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/
+  fonts:
+    - family: Montserrat
+      fonts:
+        - asset: assets/fonts/Montserrat-Black.ttf
+        - asset: assets/fonts/Montserrat-Bold.ttf
+        - asset: assets/fonts/Montserrat-ExtraBold.ttf
+        - asset: assets/fonts/Montserrat-Light.ttf
+        - asset: assets/fonts/Montserrat-Medium.ttf
+        - asset: assets/fonts/Montserrat-Regular.ttf
+        - asset: assets/fonts/Montserrat-SemiBold.ttf
+        - asset: assets/fonts/Montserrat-Thin.ttf

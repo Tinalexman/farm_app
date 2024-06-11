@@ -48,6 +48,17 @@ class _FarmAppState extends State<FarmApp> {
       builder: (_, child) => MaterialApp.router(
         title: 'Farm App',
         themeMode: ThemeMode.system,
+        theme: FlexColorScheme.light(
+          scheme: FlexScheme.greenM3,
+          fontFamily: "Montserrat",
+          useMaterial3: true,
+          scaffoldBackground: const Color.fromARGB(255, 247, 247, 247),
+          bottomAppBarElevation: 0.0,
+          appBarElevation: 0.0,
+          appBarStyle: FlexAppBarStyle.scaffoldBackground,
+          surfaceTint: Colors.transparent,
+          background: const Color.fromARGB(255, 247, 247, 247),
+        ).toTheme,
         darkTheme: FlexColorScheme.light(
           scheme: FlexScheme.greenM3,
           fontFamily: "Montserrat",

@@ -38,7 +38,7 @@ class _AlertsState extends ConsumerState<Alerts> {
       children: [
         Container(
           width: 360.w,
-          height: 200.h,
+          height: 180.h,
           padding: EdgeInsets.only(
             left: 28.w,
             right: 28.w,
@@ -63,7 +63,7 @@ class _AlertsState extends ConsumerState<Alerts> {
             children: [
               Text(
                 "Alerts",
-                style: context.textTheme.displayMedium!.copyWith(
+                style: context.textTheme.displaySmall!.copyWith(
                   fontWeight: FontWeight.bold,
                   fontFamily: "Montserrat",
                   color: neutral,
@@ -72,7 +72,7 @@ class _AlertsState extends ConsumerState<Alerts> {
               SizedBox(height: 6.h),
               Text(
                 "Check the health conditions of your animals easily with their temperatures.",
-                style: context.textTheme.bodyLarge!.copyWith(
+                style: context.textTheme.bodyMedium!.copyWith(
                   color: neutral2,
                   fontFamily: "Montserrat",
                   fontWeight: FontWeight.w500,
@@ -106,7 +106,7 @@ class _AlertsState extends ConsumerState<Alerts> {
                         ),
                         child: Text(
                           tabs[index],
-                          style: context.textTheme.bodyLarge!.copyWith(
+                          style: context.textTheme.bodyMedium!.copyWith(
                             color: tabState == index ? primary : neutral2,
                             fontFamily: "Montserrat",
                             fontWeight: FontWeight.w500,
@@ -120,7 +120,7 @@ class _AlertsState extends ConsumerState<Alerts> {
             ],
           ),
         ),
-        SizedBox(height: 20.h),
+        SizedBox(height: 10.h),
         Expanded(
           child: Padding(
             padding: EdgeInsets.symmetric(horizontal: 29.w),
@@ -141,16 +141,18 @@ class _AlertsState extends ConsumerState<Alerts> {
 
                 return _CowContainer(cow: cow);
               },
-              separatorBuilder: (_, __) => Column(
-                children: [
-                  SizedBox(height: 5.h),
-                  Divider(
-                    color: neutral4,
-                    thickness: 1.5.h,
-                  ),
-                  SizedBox(height: 5.h),
-                ],
-              ),
+              separatorBuilder: (_, index) => index == totalItems - 2
+                  ? const SizedBox()
+                  : Column(
+                      children: [
+                        SizedBox(height: 5.h),
+                        Divider(
+                          color: neutral4,
+                          thickness: 1.5.h,
+                        ),
+                        SizedBox(height: 5.h),
+                      ],
+                    ),
               itemCount: totalItems,
               physics: const BouncingScrollPhysics(),
             ),
@@ -171,11 +173,11 @@ class _CowContainer extends StatelessWidget {
 
   Color get tempColor {
     if (cow.temperature < 45) {
-      return Color.fromRGBO(109, 178, 98, 1);
+      return const Color.fromRGBO(109, 178, 98, 1);
     } else if (cow.temperature >= 45 && cow.temperature < 70) {
-      return Color.fromRGBO(237, 167, 58, 1);
+      return const Color.fromRGBO(237, 167, 58, 1);
     }
-    return Color.fromRGBO(255, 82, 82, 1);
+    return const Color.fromRGBO(255, 82, 82, 1);
   }
 
   @override
@@ -188,18 +190,14 @@ class _CowContainer extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Container(
-              width: 32.r,
-              height: 32.r,
+              width: 36.r,
+              height: 36.r,
               alignment: Alignment.center,
               decoration: const BoxDecoration(
                 shape: BoxShape.circle,
                 color: secondary2,
               ),
-              child: Image.asset(
-                "assets/images/Cow.png",
-                width: 17.w,
-                height: 14.h,
-              ),
+              child: Image.asset("assets/images/Cow.png"),
             ),
             SizedBox(width: 23.w),
             Column(
@@ -207,7 +205,7 @@ class _CowContainer extends StatelessWidget {
               children: [
                 Text(
                   cow.name,
-                  style: context.textTheme.titleLarge!.copyWith(
+                  style: context.textTheme.titleMedium!.copyWith(
                     fontWeight: FontWeight.bold,
                     fontFamily: "Montserrat",
                     color: neutral,
@@ -215,7 +213,7 @@ class _CowContainer extends StatelessWidget {
                 ),
                 Text(
                   cow.brand,
-                  style: context.textTheme.bodyMedium!.copyWith(
+                  style: context.textTheme.bodySmall!.copyWith(
                     color: neutral2,
                     fontFamily: "Montserrat",
                     fontWeight: FontWeight.w500,
@@ -227,7 +225,7 @@ class _CowContainer extends StatelessWidget {
         ),
         Text(
           "${cow.temperature}\u00B0",
-          style: context.textTheme.titleLarge!.copyWith(
+          style: context.textTheme.titleMedium!.copyWith(
             color: tempColor,
             fontFamily: "Montserrat",
             fontWeight: FontWeight.bold,

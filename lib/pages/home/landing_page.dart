@@ -34,7 +34,6 @@ class _LandingPageState extends ConsumerState<LandingPage> {
     int index = ref.watch(dashboardIndexProvider);
 
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 247, 247, 247),
       appBar: AppBar(
         elevation: 0.0,
         systemOverlayStyle: SystemUiOverlayStyle.dark,

@@ -170,9 +170,9 @@ class _CowContainer extends StatelessWidget {
   });
 
   Color get tempColor {
-    if(cow.temperature < 45) {
+    if (cow.temperature < 45) {
       return Color.fromRGBO(109, 178, 98, 1);
-    } else if(cow.temperature >= 45 && cow.temperature < 70) {
+    } else if (cow.temperature >= 45 && cow.temperature < 70) {
       return Color.fromRGBO(237, 167, 58, 1);
     }
     return Color.fromRGBO(255, 82, 82, 1);
@@ -194,6 +194,11 @@ class _CowContainer extends StatelessWidget {
               decoration: const BoxDecoration(
                 shape: BoxShape.circle,
                 color: secondary2,
+              ),
+              child: Image.asset(
+                "assets/images/Cow.png",
+                width: 17.w,
+                height: 14.h,
               ),
             ),
             SizedBox(width: 23.w),
@@ -221,7 +226,7 @@ class _CowContainer extends StatelessWidget {
           ],
         ),
         Text(
-          cow.temperature.toString(),
+          "${cow.temperature}\u00B0",
           style: context.textTheme.titleLarge!.copyWith(
             color: tempColor,
             fontFamily: "Montserrat",

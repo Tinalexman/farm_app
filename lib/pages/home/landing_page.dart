@@ -34,133 +34,150 @@ class _LandingPageState extends ConsumerState<LandingPage> {
     int index = ref.watch(dashboardIndexProvider);
 
     return Scaffold(
+      backgroundColor: const Color.fromARGB(255, 247, 247, 247),
       appBar: AppBar(
         elevation: 0.0,
         systemOverlayStyle: SystemUiOverlayStyle.dark,
+        backgroundColor: index == 1 ? Colors.white : null,
+        toolbarHeight: 30.h,
       ),
       body: SafeArea(
-        child: IndexedStack(
-          index: index,
-          children: children,
-        ),
-      ),
-      bottomNavigationBar: SizedBox(
-        height: 104.h,
-        width: 360.w,
-        child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 14.w),
-          child: Container(
-            width: 360.w,
-            height: 80.h,
-            padding: EdgeInsets.symmetric(horizontal: 35.w),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(27.r),
-              color: Colors.white,
-              boxShadow: const [
-                BoxShadow(
-                  color: Color.fromRGBO(0, 0, 0, 0.11),
-                  blurRadius: 44,
-                  spreadRadius: 0,
-                )
-              ],
+        child: Stack(
+          children: [
+            IndexedStack(
+              index: index,
+              children: children,
             ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                GestureDetector(
-                  onTap: () {
-                    if(index != 0) {
-                      ref.watch(dashboardIndexProvider.notifier).state = 0;
-                    }
-                  },
-                  child: SizedBox(
-                    height: 45.r,
-                    child: AnimatedSwitcherFlip.flipX(
-                      duration: const Duration(milliseconds: 300),
-                      switchInCurve: Curves.easeOut,
-                      switchOutCurve: Curves.easeIn,
-                      key: ValueKey<bool>(index == 0),
-                      child: Column(
-                        children: [
-                          Icon(
-                            Icons.home,
-                            color: index == 0 ? primary : neutral,
-                          ),
-                          Text(
-                            "Home",
-                            style: context.textTheme.bodySmall!.copyWith(
-                              color: index == 0 ? primary : neutral,
+            Positioned(
+              bottom: 24.h,
+              left: 14.w,
+              right: 14.w,
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 14.w),
+                child: Container(
+                  width: 360.w,
+                  height: 80.h,
+                  padding: EdgeInsets.symmetric(horizontal: 35.w),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(27.r),
+                    color: Colors.white,
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Color.fromRGBO(0, 0, 0, 0.11),
+                        blurRadius: 44,
+                        spreadRadius: 0,
+                      )
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      GestureDetector(
+                        onTap: () {
+                          if (index != 0) {
+                            ref.watch(dashboardIndexProvider.notifier).state =
+                                0;
+                          }
+                        },
+                        child: SizedBox(
+                          height: 45.r,
+                          child: AnimatedSwitcherFlip.flipX(
+                            duration: const Duration(milliseconds: 300),
+                            switchInCurve: Curves.easeOut,
+                            switchOutCurve: Curves.easeIn,
+                            key: ValueKey<bool>(index == 0),
+                            child: Column(
+                              children: [
+                                Icon(
+                                  Icons.home,
+                                  color: index == 0 ? primary : neutral,
+                                ),
+                                Text(
+                                  "Home",
+                                  style: context.textTheme.bodySmall!.copyWith(
+                                    color: index == 0 ? primary : neutral,
+                                    fontFamily: "Montserrat",
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                        ],
+                        ),
                       ),
-                    ),
-                  ),
-                ),
-                GestureDetector(
-                  onTap: () {
-                    if(index != 1) {
-                      ref.watch(dashboardIndexProvider.notifier).state = 1;
-                    }
-                  },
-                  child: SizedBox(
-                    height: 45.r,
-                    child: AnimatedSwitcherFlip.flipX(
-                      duration: const Duration(milliseconds: 300),
-                      switchInCurve: Curves.easeOut,
-                      switchOutCurve: Curves.easeIn,
-                      key: ValueKey<bool>(index == 1),
-                      child: Column(
-                        children: [
-                          Icon(
-                            Icons.crisis_alert,
-                            color: index == 1 ? primary : neutral,
-                          ),
-                          Text(
-                            "Alerts",
-                            style: context.textTheme.bodySmall!.copyWith(
-                              color: index == 1 ? primary : neutral,
+                      GestureDetector(
+                        onTap: () {
+                          if (index != 1) {
+                            ref.watch(dashboardIndexProvider.notifier).state =
+                                1;
+                          }
+                        },
+                        child: SizedBox(
+                          height: 45.r,
+                          child: AnimatedSwitcherFlip.flipX(
+                            duration: const Duration(milliseconds: 300),
+                            switchInCurve: Curves.easeOut,
+                            switchOutCurve: Curves.easeIn,
+                            key: ValueKey<bool>(index == 1),
+                            child: Column(
+                              children: [
+                                Icon(
+                                  Icons.crisis_alert,
+                                  color: index == 1 ? primary : neutral,
+                                ),
+                                Text(
+                                  "Alerts",
+                                  style: context.textTheme.bodySmall!.copyWith(
+                                    color: index == 1 ? primary : neutral,
+                                    fontFamily: "Montserrat",
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                        ],
+                        ),
                       ),
-                    ),
-                  ),
-                ),
-                GestureDetector(
-                  onTap: () {
-                    if(index != 2) {
-                      ref.watch(dashboardIndexProvider.notifier).state = 2;
-                    }
-                  },
-                  child: SizedBox(
-                    height: 45.r,
-                    child: AnimatedSwitcherFlip.flipX(
-                      duration: const Duration(milliseconds: 300),
-                      switchInCurve: Curves.easeOut,
-                      switchOutCurve: Curves.easeIn,
-                      key: ValueKey<bool>(index == 2),
-                      child: Column(
-                        children: [
-                          Icon(
-                            Icons.settings,
-                            color: index == 2 ? primary : neutral,
-                          ),
-                          Text(
-                            "Settings",
-                            style: context.textTheme.bodySmall!.copyWith(
-                              color: index == 2 ? primary : neutral,
+                      GestureDetector(
+                        onTap: () {
+                          if (index != 2) {
+                            ref.watch(dashboardIndexProvider.notifier).state =
+                                2;
+                          }
+                        },
+                        child: SizedBox(
+                          height: 45.r,
+                          child: AnimatedSwitcherFlip.flipX(
+                            duration: const Duration(milliseconds: 300),
+                            switchInCurve: Curves.easeOut,
+                            switchOutCurve: Curves.easeIn,
+                            key: ValueKey<bool>(index == 2),
+                            child: Column(
+                              children: [
+                                Icon(
+                                  Icons.settings,
+                                  color: index == 2 ? primary : neutral,
+                                ),
+                                Text(
+                                  "Settings",
+                                  style: context.textTheme.bodySmall!.copyWith(
+                                    color: index == 2 ? primary : neutral,
+                                    fontFamily: "Montserrat",
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                        ],
+                        ),
                       ),
-                    ),
+                    ],
                   ),
                 ),
-              ],
-            ),
-          ),
+              ),
+            )
+          ],
         ),
       ),
     );

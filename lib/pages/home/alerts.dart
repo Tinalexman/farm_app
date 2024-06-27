@@ -20,6 +20,8 @@ class _AlertsState extends State<Alerts> {
   late Timer timer;
   late List<double> temps;
 
+  String condition = "";
+
   final String pigImage =
       "https://www.freepik.com/free-vector/hand-drawn-pig-cartoon-illustration_42077885.htm#page=2&query=pig&position=1&from_view=keyword&track=sph&uuid=15c8be26-d9c9-4306-9680-699264429bf7";
 
@@ -28,17 +30,17 @@ class _AlertsState extends State<Alerts> {
     super.initState();
     random = Random(DateTime.now().millisecondsSinceEpoch);
     temps = [0];
-    timer = Timer.periodic(const Duration(minutes: 1), processData);
+    timer = Timer.periodic(const Duration(seconds: 10), processData);
     processData(timer);
   }
 
   Color get tempColor {
     double temperature = temps.last;
-    if (temperature < 45) {
+    if (temperature < 38.3) {
       return const Color.fromRGBO(60, 80, 180, 1);
-    } else if (temperature >= 45) {
+    } else if (temperature >= 38.3 && temperature <= 39.7) {
       return const Color.fromRGBO(109, 178, 98, 1);
-    } else if (temperature >= 45 && temperature < 70) {
+    } else if (temperature > 39.7 && temperature <= 41) {
       return const Color.fromRGBO(237, 167, 58, 1);
     }
     return const Color.fromRGBO(255, 82, 82, 1);
@@ -86,13 +88,25 @@ class _AlertsState extends State<Alerts> {
 
   void processData(Timer? timer) async {
     double value = await getCurrentData();
-    double extra = 127.0;
+    double extra = 0;
     if (temps.length == 1 && temps.first == 0) {
       temps.setAll(0, [value + extra]);
     } else {
       temps.add(value + extra);
     }
-    setState(() {});
+    setState(() {
+      if (value < 38.3) {
+        condition = "";
+      } else if (value >= 38.3 && value <= 39.7) {
+        condition = "Normal";
+      } else if (value > 39.7 && value <= 40.5) {
+        condition = "Likely in heat";
+      } else if(value > 40.5 && value < 45) {
+        condition = "Likely sick";
+      } else {
+        condition = "";
+      }
+    });
   }
 
   @override
@@ -208,6 +222,15 @@ class _AlertsState extends State<Alerts> {
                                 color: tempColor,
                               ),
                             ),
+                            SizedBox(height: 2.h),
+                            Text(
+                              condition,
+                              style: context.textTheme.bodyMedium!.copyWith(
+                                color: tempColor,
+                                fontFamily: "Montserrat",
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
                           ],
                         ),
                       ],
@@ -232,7 +255,7 @@ class _AlertsState extends State<Alerts> {
                           ),
                         ),
                         TextSpan(
-                          text: "(Minutes passed)",
+                          text: "(10 second updates)",
                           style: context.textTheme.bodySmall!.copyWith(
                             fontFamily: "Montserrat",
                             fontWeight: FontWeight.w700,

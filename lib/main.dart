@@ -1,7 +1,6 @@
 import 'package:farm_app/pages/home/alerts.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 void main() async {
@@ -14,7 +13,7 @@ void main() async {
     // DevicePreview(
     //   enabled: true,
     //   builder: (_) =>
-    const ProviderScope(child: FarmApp()),
+    const FarmApp(),
     // ),
   );
 }

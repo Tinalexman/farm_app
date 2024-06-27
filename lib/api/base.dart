@@ -4,7 +4,7 @@ import 'package:dio/dio.dart';
 
 final Dio dio = Dio(
   BaseOptions(
-    baseUrl: "https://af53-102-88-68-164.ngrok-free.app",
+    baseUrl: "https://f39c-102-88-82-120.ngrok-free.app",
     headers: {
       'ngrok-skip-browser-warning': true,
     },
@@ -14,14 +14,15 @@ final Dio dio = Dio(
   ),
 );
 
-Future<void> getCurrentData() async {
-
+Future<double> getCurrentData() async {
   try {
     Response response = await dio.get("/temp");
     if (response.statusCode! == 200) {
-      log(response.data.toString());
+      return (response.data["TempInCValue"] as num).toDouble();
     }
   } catch (e) {
     log(e.toString());
   }
+  
+  return 0;
 }

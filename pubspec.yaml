@@ -13,7 +13,6 @@ dependencies:
 
 
   dio:
-  flutter_riverpod:
   flutter_screenutil:
   device_preview:
   flutter_spinkit:

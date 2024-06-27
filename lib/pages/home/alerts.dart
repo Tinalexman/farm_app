@@ -1,28 +1,24 @@
 import 'dart:async';
-import 'dart:math';
+import 'dart:math' hide log;
 
 import 'package:clipboard/clipboard.dart';
-import 'package:dio/dio.dart';
 import 'package:farm_app/api/base.dart';
-import 'package:farm_app/components/animal.dart';
 import 'package:farm_app/misc/constants.dart';
-import 'package:farm_app/misc/providers.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-
-class Alerts extends ConsumerStatefulWidget {
+class Alerts extends StatefulWidget {
   const Alerts({super.key});
 
   @override
-  ConsumerState<Alerts> createState() => _AlertsState();
+  State<Alerts> createState() => _AlertsState();
 }
 
-class _AlertsState extends ConsumerState<Alerts> {
+class _AlertsState extends State<Alerts> {
   late Random random;
   late Timer timer;
+  late List<double> temps;
 
   final String pigImage =
       "https://www.freepik.com/free-vector/hand-drawn-pig-cartoon-illustration_42077885.htm#page=2&query=pig&position=1&from_view=keyword&track=sph&uuid=15c8be26-d9c9-4306-9680-699264429bf7";
@@ -31,15 +27,18 @@ class _AlertsState extends ConsumerState<Alerts> {
   void initState() {
     super.initState();
     random = Random(DateTime.now().millisecondsSinceEpoch);
-    timer = Timer.periodic(const Duration(seconds: 10), processData);
+    temps = [0];
+    timer = Timer.periodic(const Duration(minutes: 1), processData);
     processData(timer);
   }
 
   Color get tempColor {
-    Animal animal = ref.watch(animalProvider);
-    if (animal.temperature < 45) {
+    double temperature = temps.last;
+    if (temperature < 45) {
+      return const Color.fromRGBO(60, 80, 180, 1);
+    } else if (temperature >= 45) {
       return const Color.fromRGBO(109, 178, 98, 1);
-    } else if (animal.temperature >= 45 && animal.temperature < 70) {
+    } else if (temperature >= 45 && temperature < 70) {
       return const Color.fromRGBO(237, 167, 58, 1);
     }
     return const Color.fromRGBO(255, 82, 82, 1);
@@ -51,23 +50,53 @@ class _AlertsState extends ConsumerState<Alerts> {
       (random.nextInt(max - min) + min).toDouble();
 
   List<FlSpot> get randomSpots {
-    return List.generate(
-      11,
-      (index) => FlSpot(
-        index.toDouble(),
-        getNumRange(40, 60),
-      ),
-    );
+    int maxLength = 11;
+    List<FlSpot> spots = [];
+    if (temps.length < maxLength) {
+      spots.addAll(
+        List.generate(
+          temps.length,
+          (index) => FlSpot(index.toDouble(), temps[index]),
+        ),
+      );
+      spots.addAll(
+        List.generate(
+          maxLength - temps.length,
+          (index) => FlSpot(
+            (temps.length + index).toDouble(),
+            0,
+          ),
+        ),
+      );
+    } else {
+      List<double> lastTemps = temps.sublist(temps.length - maxLength);
+      spots.addAll(
+        List.generate(
+          maxLength,
+          (index) => FlSpot(
+            index.toDouble(),
+            lastTemps[index],
+          ),
+        ),
+      );
+    }
+
+    return spots;
   }
 
   void processData(Timer? timer) async {
-    await getCurrentData();
+    double value = await getCurrentData();
+    double extra = 127.0;
+    if (temps.length == 1 && temps.first == 0) {
+      temps.setAll(0, [value + extra]);
+    } else {
+      temps.add(value + extra);
+    }
+    setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
-    Animal animal = ref.watch(animalProvider);
-
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
@@ -136,7 +165,7 @@ class _AlertsState extends ConsumerState<Alerts> {
                               ),
                             ),
                             Text(
-                              animal.name,
+                              "Cody",
                               style: context.textTheme.titleMedium!.copyWith(
                                 fontWeight: FontWeight.w700,
                                 fontFamily: "Montserrat",
@@ -152,7 +181,7 @@ class _AlertsState extends ConsumerState<Alerts> {
                               ),
                             ),
                             Text(
-                              animal.brand,
+                              "Large White",
                               style: context.textTheme.titleMedium!.copyWith(
                                 fontWeight: FontWeight.w700,
                                 fontFamily: "Montserrat",
@@ -172,7 +201,7 @@ class _AlertsState extends ConsumerState<Alerts> {
                               ),
                             ),
                             Text(
-                              "${animal.temperature}\u00B0C",
+                              "${temps.last.toStringAsFixed(1)}\u00B0C",
                               style: context.textTheme.displaySmall!.copyWith(
                                 fontWeight: FontWeight.w700,
                                 fontFamily: "Montserrat",

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 
 
 const Color primary = Color.fromRGBO(93, 176, 117, 1);
@@ -18,11 +17,6 @@ extension PathExtension on String {
 
 extension ContextExtension on BuildContext {
   TextTheme get textTheme => Theme.of(this).textTheme;
-  GoRouter get router => GoRouter.of(this);
-}
-
-class Pages {
-  static String get home => "home";
 }
 
 

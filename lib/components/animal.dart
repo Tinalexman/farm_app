@@ -1,19 +1,16 @@
 import 'package:equatable/equatable.dart';
 
-class Cow extends Equatable {
-
-  final String id;
+class Animal extends Equatable {
   final String name;
   final String brand;
   final int temperature;
 
-  const Cow({
-    this.id = "",
+  const Animal({
     this.name = "",
     this.brand = "",
     this.temperature = 25,
   });
 
   @override
-  List<Object?> get props => [id];
+  List<Object?> get props => [name, brand];
 }

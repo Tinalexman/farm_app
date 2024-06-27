@@ -1,9 +1,17 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:farm_app/components/cow.dart';
+import 'dart:async';
+import 'dart:math';
+
+import 'package:clipboard/clipboard.dart';
+import 'package:dio/dio.dart';
+import 'package:farm_app/api/base.dart';
+import 'package:farm_app/components/animal.dart';
 import 'package:farm_app/misc/constants.dart';
 import 'package:farm_app/misc/providers.dart';
+import 'package:fl_chart/fl_chart.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+
 
 class Alerts extends ConsumerStatefulWidget {
   const Alerts({super.key});
@@ -13,225 +21,288 @@ class Alerts extends ConsumerStatefulWidget {
 }
 
 class _AlertsState extends ConsumerState<Alerts> {
-  final List<String> tabs = ["All", "Sick", "Hungry"];
+  late Random random;
+  late Timer timer;
 
-  int tabState = 0;
-
-  int get totalItems {
-    if (tabState == 0) {
-      return ref.watch(allCowsProvider).length + 1;
-    } else if (tabState == 1) {
-      return ref.watch(sickCowsProvider).length + 1;
-    } else if (tabState == 2) {
-      return ref.watch(hungryCowsProvider).length + 1;
-    }
-    return 0;
-  }
+  final String pigImage =
+      "https://www.freepik.com/free-vector/hand-drawn-pig-cartoon-illustration_42077885.htm#page=2&query=pig&position=1&from_view=keyword&track=sph&uuid=15c8be26-d9c9-4306-9680-699264429bf7";
 
   @override
-  Widget build(BuildContext context) {
-    List<Cow> allCows = ref.watch(allCowsProvider);
-    List<Cow> sickCows = ref.watch(sickCowsProvider);
-    List<Cow> hungryCows = ref.watch(hungryCowsProvider);
-
-    return Column(
-      children: [
-        Container(
-          width: 360.w,
-          height: 180.h,
-          padding: EdgeInsets.only(
-            left: 28.w,
-            right: 28.w,
-            bottom: 21.h,
-          ),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.only(
-              bottomLeft: Radius.circular(40.r),
-              bottomRight: Radius.circular(40.r),
-            ),
-            boxShadow: const [
-              BoxShadow(
-                color: Color.fromRGBO(0, 0, 0, 0.11),
-                blurRadius: 44,
-                spreadRadius: 0,
-              )
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                "Alerts",
-                style: context.textTheme.displaySmall!.copyWith(
-                  fontWeight: FontWeight.bold,
-                  fontFamily: "Montserrat",
-                  color: neutral,
-                ),
-              ),
-              SizedBox(height: 6.h),
-              Text(
-                "Check the health conditions of your animals easily with their temperatures.",
-                style: context.textTheme.bodyMedium!.copyWith(
-                  color: neutral2,
-                  fontFamily: "Montserrat",
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              SizedBox(height: 20.h),
-              Container(
-                width: 360.w,
-                height: 60.h,
-                padding: EdgeInsets.symmetric(
-                  horizontal: 19.w,
-                ),
-                decoration: BoxDecoration(
-                  color: neutral3,
-                  borderRadius: BorderRadius.circular(20.r),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: List.generate(
-                    tabs.length,
-                    (index) => GestureDetector(
-                      onTap: () => setState(() => tabState = index),
-                      child: Container(
-                        width: 75.w,
-                        height: 30.h,
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          color: tabState == index ? secondary2 : null,
-                          borderRadius: BorderRadius.circular(8.r),
-                        ),
-                        child: Text(
-                          tabs[index],
-                          style: context.textTheme.bodyMedium!.copyWith(
-                            color: tabState == index ? primary : neutral2,
-                            fontFamily: "Montserrat",
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              )
-            ],
-          ),
-        ),
-        SizedBox(height: 10.h),
-        Expanded(
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 29.w),
-            child: ListView.separated(
-              itemBuilder: (_, index) {
-                if (index == totalItems - 1) {
-                  return SizedBox(height: 150.h);
-                }
-
-                late Cow cow;
-                if (tabState == 0) {
-                  cow = allCows[index];
-                } else if (tabState == 1) {
-                  cow = sickCows[index];
-                } else if (tabState == 2) {
-                  cow = hungryCows[index];
-                }
-
-                return _CowContainer(cow: cow);
-              },
-              separatorBuilder: (_, index) => index == totalItems - 2
-                  ? const SizedBox()
-                  : Column(
-                      children: [
-                        SizedBox(height: 5.h),
-                        Divider(
-                          color: neutral4,
-                          thickness: 1.5.h,
-                        ),
-                        SizedBox(height: 5.h),
-                      ],
-                    ),
-              itemCount: totalItems,
-              physics: const BouncingScrollPhysics(),
-            ),
-          ),
-        ),
-      ],
-    );
+  void initState() {
+    super.initState();
+    random = Random(DateTime.now().millisecondsSinceEpoch);
+    timer = Timer.periodic(const Duration(seconds: 10), processData);
+    processData(timer);
   }
-}
-
-class _CowContainer extends StatelessWidget {
-  final Cow cow;
-
-  const _CowContainer({
-    super.key,
-    required this.cow,
-  });
 
   Color get tempColor {
-    if (cow.temperature < 45) {
+    Animal animal = ref.watch(animalProvider);
+    if (animal.temperature < 45) {
       return const Color.fromRGBO(109, 178, 98, 1);
-    } else if (cow.temperature >= 45 && cow.temperature < 70) {
+    } else if (animal.temperature >= 45 && animal.temperature < 70) {
       return const Color.fromRGBO(237, 167, 58, 1);
     }
     return const Color.fromRGBO(255, 82, 82, 1);
   }
 
+  void copyPigUrl() => FlutterClipboard.copy(pigImage);
+
+  double getNumRange(int min, int max) =>
+      (random.nextInt(max - min) + min).toDouble();
+
+  List<FlSpot> get randomSpots {
+    return List.generate(
+      11,
+      (index) => FlSpot(
+        index.toDouble(),
+        getNumRange(40, 60),
+      ),
+    );
+  }
+
+  void processData(Timer? timer) async {
+    await getCurrentData();
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Container(
-              width: 36.r,
-              height: 36.r,
-              alignment: Alignment.center,
-              decoration: const BoxDecoration(
-                shape: BoxShape.circle,
-                color: secondary2,
+    Animal animal = ref.watch(animalProvider);
+
+    return Scaffold(
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20.w),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(height: 40.h),
+                    Text(
+                      "Animalia",
+                      style: context.textTheme.displaySmall!.copyWith(
+                        fontWeight: FontWeight.bold,
+                        fontFamily: "Montserrat",
+                        color: primary,
+                      ),
+                    ),
+                    SizedBox(height: 6.h),
+                    Text(
+                      "Check the health conditions of your animals easily with their temperatures.",
+                      style: context.textTheme.bodyMedium!.copyWith(
+                        color: neutral2,
+                        fontFamily: "Montserrat",
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    SizedBox(height: 50.h),
+                  ],
+                ),
               ),
-              child: Image.asset("assets/images/Cow.png"),
-            ),
-            SizedBox(width: 23.w),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  cow.name,
-                  style: context.textTheme.titleMedium!.copyWith(
-                    fontWeight: FontWeight.bold,
-                    fontFamily: "Montserrat",
-                    color: neutral,
+              Image.asset(
+                "assets/images/Pig.png",
+                width: 360.w,
+                fit: BoxFit.contain,
+              ),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20.w),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(height: 20.h),
+                    Text(
+                      "Statistics",
+                      style: context.textTheme.titleLarge!.copyWith(
+                        fontWeight: FontWeight.w600,
+                        fontFamily: "Montserrat",
+                      ),
+                    ),
+                    SizedBox(height: 20.h),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              "Name",
+                              style: context.textTheme.bodyMedium!.copyWith(
+                                color: neutral2,
+                                fontFamily: "Montserrat",
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            Text(
+                              animal.name,
+                              style: context.textTheme.titleMedium!.copyWith(
+                                fontWeight: FontWeight.w700,
+                                fontFamily: "Montserrat",
+                              ),
+                            ),
+                            SizedBox(height: 10.h),
+                            Text(
+                              "Brand",
+                              style: context.textTheme.bodyMedium!.copyWith(
+                                color: neutral2,
+                                fontFamily: "Montserrat",
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            Text(
+                              animal.brand,
+                              style: context.textTheme.titleMedium!.copyWith(
+                                fontWeight: FontWeight.w700,
+                                fontFamily: "Montserrat",
+                              ),
+                            ),
+                          ],
+                        ),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Text(
+                              "Temperature",
+                              style: context.textTheme.bodyMedium!.copyWith(
+                                color: neutral2,
+                                fontFamily: "Montserrat",
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            Text(
+                              "${animal.temperature}\u00B0C",
+                              style: context.textTheme.displaySmall!.copyWith(
+                                fontWeight: FontWeight.w700,
+                                fontFamily: "Montserrat",
+                                color: tempColor,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 50.h),
+                    Text(
+                      "Graph",
+                      style: context.textTheme.titleLarge!.copyWith(
+                        fontWeight: FontWeight.w600,
+                        fontFamily: "Montserrat",
+                      ),
+                    ),
+                    SizedBox(height: 20.h),
+                    RichText(
+                      text: TextSpan(children: [
+                        TextSpan(
+                          text: "X Axis ",
+                          style: context.textTheme.bodySmall!.copyWith(
+                            color: neutral2,
+                            fontFamily: "Montserrat",
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        TextSpan(
+                          text: "(Minutes passed)",
+                          style: context.textTheme.bodySmall!.copyWith(
+                            fontFamily: "Montserrat",
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ]),
+                    ),
+                    SizedBox(height: 10.h),
+                    RichText(
+                      text: TextSpan(children: [
+                        TextSpan(
+                          text: "Y Axis ",
+                          style: context.textTheme.bodySmall!.copyWith(
+                            color: neutral2,
+                            fontFamily: "Montserrat",
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        TextSpan(
+                          text: "(Temperature)",
+                          style: context.textTheme.bodySmall!.copyWith(
+                            fontFamily: "Montserrat",
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ]),
+                    ),
+                    SizedBox(height: 20.h),
+                  ],
+                ),
+              ),
+              SizedBox(
+                height: 400.h,
+                child: LineChart(
+                  LineChartData(
+                    minY: 0,
+                    maxY: 90,
+                    minX: 0,
+                    maxX: 10,
+                    clipData: const FlClipData.horizontal(),
+                    backgroundColor: Colors.white,
+                    gridData: const FlGridData(
+                      drawHorizontalLine: false,
+                      drawVerticalLine: false,
+                    ),
+                    borderData: FlBorderData(
+                      show: false,
+                    ),
+                    lineBarsData: [
+                      LineChartBarData(
+                        color: primary,
+                        gradient: const LinearGradient(
+                          colors: [primary, secondary],
+                          begin: Alignment.topRight,
+                          end: Alignment.bottomLeft,
+                        ),
+                        belowBarData: BarAreaData(
+                          color: primary,
+                          show: true,
+                          gradient: LinearGradient(
+                            colors: [primary.withOpacity(0.5), Colors.white],
+                            begin: Alignment.topRight,
+                            end: Alignment.bottomLeft,
+                          ),
+                        ),
+                        shadow: Shadow(
+                          color: primary.withOpacity(0.5),
+                        ),
+                        isCurved: true,
+                        isStrokeCapRound: true,
+                        curveSmoothness: 1,
+                        spots: randomSpots,
+                      ),
+                    ],
+                  ),
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeOut,
+                ),
+              ),
+              SizedBox(height: 50.h),
+              Center(
+                child: GestureDetector(
+                  onTap: copyPigUrl,
+                  child: Text(
+                    "Pig Image by Freepik",
+                    style: context.textTheme.bodyLarge!.copyWith(
+                      fontFamily: "Montserrat",
+                      fontWeight: FontWeight.w600,
+                      decoration: TextDecoration.underline,
+                      decorationThickness: 2,
+                    ),
                   ),
                 ),
-                Text(
-                  cow.brand,
-                  style: context.textTheme.bodySmall!.copyWith(
-                    color: neutral2,
-                    fontFamily: "Montserrat",
-                    fontWeight: FontWeight.w500,
-                  ),
-                )
-              ],
-            )
-          ],
-        ),
-        Text(
-          "${cow.temperature}\u00B0",
-          style: context.textTheme.titleMedium!.copyWith(
-            color: tempColor,
-            fontFamily: "Montserrat",
-            fontWeight: FontWeight.bold,
+              ),
+              SizedBox(height: 20.h),
+            ],
           ),
-        )
-      ],
+        ),
+      ),
     );
   }
 }

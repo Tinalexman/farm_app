@@ -2,11 +2,15 @@ import 'dart:async';
 import 'dart:math' hide log;
 
 import 'package:clipboard/clipboard.dart';
+import 'package:dio/dio.dart';
 import 'package:farm_app/api/base.dart';
 import 'package:farm_app/misc/constants.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+
+import '../../misc/widgets.dart';
 
 class Alerts extends StatefulWidget {
   const Alerts({super.key});
@@ -25,11 +29,19 @@ class _AlertsState extends State<Alerts> {
   final String pigImage =
       "https://www.freepik.com/free-vector/hand-drawn-pig-cartoon-illustration_42077885.htm#page=2&query=pig&position=1&from_view=keyword&track=sph&uuid=15c8be26-d9c9-4306-9680-699264429bf7";
 
+  bool pollForData = false;
+
+  late Dio dio;
+
   @override
   void initState() {
     super.initState();
     random = Random(DateTime.now().millisecondsSinceEpoch);
     temps = [0];
+    Future.delayed(Duration.zero, showServerDialog);
+  }
+
+  void setupTimer() {
     timer = Timer.periodic(const Duration(seconds: 10), processData);
     processData(timer);
   }
@@ -55,12 +67,15 @@ class _AlertsState extends State<Alerts> {
     int maxLength = 11;
     List<FlSpot> spots = [];
     if (temps.length < maxLength) {
+      // If the temperatures are not up to the max length
+      // Add all the valid temperatures
       spots.addAll(
         List.generate(
           temps.length,
           (index) => FlSpot(index.toDouble(), temps[index]),
         ),
       );
+      // Add zeros for the rest
       spots.addAll(
         List.generate(
           maxLength - temps.length,
@@ -71,7 +86,8 @@ class _AlertsState extends State<Alerts> {
         ),
       );
     } else {
-      List<double> lastTemps = temps.sublist(temps.length - maxLength);
+      List<double> lastTemps = temps
+          .sublist(temps.length - maxLength); // Get the last 'max' temparatures
       spots.addAll(
         List.generate(
           maxLength,
@@ -87,7 +103,23 @@ class _AlertsState extends State<Alerts> {
   }
 
   void processData(Timer? timer) async {
-    double value = await getCurrentData();
+    if (!pollForData) return;
+
+    double value = await getCurrentData(dio);
+    if (value == connectionErrorCode) {
+      Fluttertoast.showToast(
+        msg: "Server connection failed",
+        backgroundColor: primary,
+        gravity: ToastGravity.SNACKBAR,
+        toastLength: Toast.LENGTH_LONG,
+        fontSize: 14,
+        textColor: Colors.white,
+      );
+      setState(() => pollForData = false);
+      showServerDialog();
+      return;
+    }
+
     double extra = 0;
     if (temps.length == 1 && temps.first == 0) {
       temps.setAll(0, [value + extra]);
@@ -101,12 +133,29 @@ class _AlertsState extends State<Alerts> {
         condition = "Normal";
       } else if (value > 39.7 && value <= 40.5) {
         condition = "Likely in heat";
-      } else if(value > 40.5 && value < 45) {
+      } else if (value > 40.5 && value < 45) {
         condition = "Likely sick";
       } else {
         condition = "";
       }
     });
+  }
+
+  void showServerDialog() {
+    showDialog(
+      context: context,
+      builder: (_) => ServerUrlDialog(onProceed: (val) {
+        if (val != null) {
+          setState(() {
+            dio = createDio(val);
+            pollForData = true;
+          });
+          setupTimer();
+        }
+      }),
+      useSafeArea: true,
+      barrierDismissible: false,
+    );
   }
 
   @override
@@ -149,6 +198,22 @@ class _AlertsState extends State<Alerts> {
                 width: 360.w,
                 fit: BoxFit.contain,
               ),
+              SizedBox(height: 10.h),
+              Center(
+                child: GestureDetector(
+                  onTap: copyPigUrl,
+                  child: Text(
+                    "Pig Image by Freepik",
+                    style: context.textTheme.bodyLarge!.copyWith(
+                      fontFamily: "Montserrat",
+                      fontWeight: FontWeight.w600,
+                      decoration: TextDecoration.underline,
+                      decorationThickness: 2,
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(height: 10.h),
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 20.w),
                 child: Column(
@@ -336,21 +401,6 @@ class _AlertsState extends State<Alerts> {
                 ),
               ),
               SizedBox(height: 50.h),
-              Center(
-                child: GestureDetector(
-                  onTap: copyPigUrl,
-                  child: Text(
-                    "Pig Image by Freepik",
-                    style: context.textTheme.bodyLarge!.copyWith(
-                      fontFamily: "Montserrat",
-                      fontWeight: FontWeight.w600,
-                      decoration: TextDecoration.underline,
-                      decorationThickness: 2,
-                    ),
-                  ),
-                ),
-              ),
-              SizedBox(height: 20.h),
             ],
           ),
         ),

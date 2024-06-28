@@ -2,9 +2,11 @@ import 'dart:developer';
 
 import 'package:dio/dio.dart';
 
-final Dio dio = Dio(
+const double connectionErrorCode = -1000;
+
+Dio createDio(String baseUrl) => Dio(
   BaseOptions(
-    baseUrl: "https://f39c-102-88-82-120.ngrok-free.app",
+    baseUrl: baseUrl,
     headers: {
       'ngrok-skip-browser-warning': true,
     },
@@ -14,13 +16,19 @@ final Dio dio = Dio(
   ),
 );
 
-Future<double> getCurrentData() async {
+Future<double> getCurrentData(Dio dio) async {
   try {
     Response response = await dio.get("/temp");
     if (response.statusCode! == 200) {
       return (response.data["TempInCValue"] as num).toDouble();
     }
-  } catch (e) {
+  } on DioException catch(e) {
+    if(e.type == DioExceptionType.connectionError || e.type == DioExceptionType.badResponse) {
+      return connectionErrorCode;
+    }
+  }
+
+  catch (e) {
     log(e.toString());
   }
   

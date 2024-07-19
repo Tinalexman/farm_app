@@ -2,7 +2,7 @@ import 'dart:developer';
 
 import 'package:dio/dio.dart';
 
-const double connectionErrorCode = -1000;
+const double connectionErrorCode = -1000, unknownErrorCode = -2000;
 
 Dio createDio(String baseUrl) => Dio(
   BaseOptions(
@@ -24,13 +24,14 @@ Future<double> getCurrentData(Dio dio) async {
     }
   } on DioException catch(e) {
     if(e.type == DioExceptionType.connectionError || e.type == DioExceptionType.badResponse) {
+      log("DioException: ${e}");
       return connectionErrorCode;
     }
   }
 
   catch (e) {
-    log(e.toString());
+    log("Unknown Error: $e");
   }
   
-  return 0;
+  return unknownErrorCode;
 }

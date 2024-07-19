@@ -106,9 +106,11 @@ class _AlertsState extends State<Alerts> {
     if (!pollForData) return;
 
     double value = await getCurrentData(dio);
-    if (value == connectionErrorCode) {
+    if (value == connectionErrorCode || value == unknownErrorCode) {
       Fluttertoast.showToast(
-        msg: "Unable to connect to the server",
+        msg: value == unknownErrorCode
+            ? "An unknown error occurred. Please confirm the base url and check your internet settings or contact the developer."
+            : "Unable to connect to the server. Please ensure the sensor is on and confirm the base url",
         backgroundColor: primary,
         gravity: ToastGravity.SNACKBAR,
         toastLength: Toast.LENGTH_LONG,

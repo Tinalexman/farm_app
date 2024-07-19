@@ -155,8 +155,7 @@ class ServerUrlDialog extends StatefulWidget {
 }
 
 class _ServerUrlDialogState extends State<ServerUrlDialog> {
-  final TextEditingController controller =
-      TextEditingController(text: "https://f39c-102-88-82-120.ngrok-free.app");
+  final TextEditingController controller = TextEditingController();
 
   @override
   void dispose() {

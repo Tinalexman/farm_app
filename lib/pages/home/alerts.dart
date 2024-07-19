@@ -29,7 +29,7 @@ class _AlertsState extends State<Alerts> {
   final String pigImage =
       "https://www.freepik.com/free-vector/hand-drawn-pig-cartoon-illustration_42077885.htm#page=2&query=pig&position=1&from_view=keyword&track=sph&uuid=15c8be26-d9c9-4306-9680-699264429bf7";
 
-  bool pollForData = false;
+  bool pollForData = false, hasConnected = false;
 
   late Dio dio;
 
@@ -108,16 +108,29 @@ class _AlertsState extends State<Alerts> {
     double value = await getCurrentData(dio);
     if (value == connectionErrorCode) {
       Fluttertoast.showToast(
-        msg: "Server connection failed",
+        msg: "Unable to connect to the server",
         backgroundColor: primary,
         gravity: ToastGravity.SNACKBAR,
         toastLength: Toast.LENGTH_LONG,
         fontSize: 14,
         textColor: Colors.white,
       );
-      setState(() => pollForData = false);
+      setState(() {
+        pollForData = false;
+        hasConnected = false;
+      });
       showServerDialog();
       return;
+    } else if (!hasConnected) {
+      Fluttertoast.showToast(
+        msg: "Connected to the server successfully",
+        backgroundColor: primary,
+        gravity: ToastGravity.SNACKBAR,
+        toastLength: Toast.LENGTH_LONG,
+        fontSize: 14,
+        textColor: Colors.white,
+      );
+      setState(() => hasConnected = true);
     }
 
     double extra = 0;
@@ -151,6 +164,15 @@ class _AlertsState extends State<Alerts> {
             pollForData = true;
           });
           setupTimer();
+        } else {
+          Fluttertoast.showToast(
+            msg: "User canceled server connection. Please restart the app",
+            backgroundColor: primary,
+            gravity: ToastGravity.SNACKBAR,
+            toastLength: Toast.LENGTH_LONG,
+            fontSize: 14,
+            textColor: Colors.white,
+          );
         }
       }),
       useSafeArea: true,
